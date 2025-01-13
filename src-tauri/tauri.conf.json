@@ -26,6 +26,16 @@
       "csp": null
     }
   },
+  "plugins": {
+    "cli": {
+      "description": "smap cli",
+      "subcommands": {
+        "open": {
+          "description": "Run the application"
+        }
+      }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
