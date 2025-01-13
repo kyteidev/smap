@@ -10,11 +10,16 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "smap",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "visible": true,
+        "transparent": true,
+        "hiddenTitle": true,
+        "decorations": false
       }
     ],
     "security": {
