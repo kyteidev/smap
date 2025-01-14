@@ -2,7 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::Serialize;
+use tauri::Manager;
 use tauri_plugin_cli::CliExt;
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 use std::{path::PathBuf, process::Command};
 
@@ -18,7 +20,6 @@ fn show_window(window: tauri::Window) {
     window.set_focus().unwrap();
 }
 
-// Function to hide window
 #[tauri::command]
 fn hide_window(window: tauri::Window) {
     window.hide().unwrap();
@@ -86,7 +87,7 @@ fn list_applications() -> Result<Vec<AppInfo>, String> {
 }
 
 fn main() {
-    tauri::Builder::default()
+    let mut app = tauri::Builder::default()
         .plugin(tauri_plugin_cli::init())
         .setup(|app| {
             match app.cli().matches() {
@@ -95,6 +96,35 @@ fn main() {
                 }
                 Err(_) => {}
             }
+
+            let shortcut_keys = Shortcut::new(Some(Modifiers::SUPER), Code::Space);
+            let app_handle = app.handle().clone();
+
+            app.handle().plugin(
+                tauri_plugin_global_shortcut::Builder::new()
+                    .with_handler(move |_app, shortcut, event| {
+                        println!("{:?}", shortcut);
+                        if shortcut == &shortcut_keys {
+                            match event.state() {
+                                ShortcutState::Pressed => {
+                                    if let Some(window) = app_handle.get_webview_window("main") {
+                                        if window.is_visible().unwrap() {
+                                            window.hide().unwrap();
+                                        } else {
+                                            window.show().unwrap();
+                                            window.set_focus().unwrap();
+                                        }
+                                    }
+                                }
+                                ShortcutState::Released => {}
+                            }
+                        }
+                    })
+                    .build(),
+            )?;
+
+            app.global_shortcut().register(shortcut_keys)?;
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -103,6 +133,10 @@ fn main() {
             show_window,
             hide_window
         ])
-        .run(tauri::generate_context!())
+        .build(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+    app.run(|_app_handle, _event| {});
 }

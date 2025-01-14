@@ -9,6 +9,8 @@
     "main"
   ],
   "permissions": [
-    "cli:default"
+    "cli:default",
+    "global-shortcut:default",
+    "global-shortcut:default"
   ]
 }
