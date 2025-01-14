@@ -4,6 +4,9 @@ import { createSignal, For, onMount } from "solid-js";
 import { webviewWindow } from "@tauri-apps/api";
 
 const App = () => {
+  const [query, setQuery] = createSignal<string>("");
+  const [suggestions, setSuggestions] = createSignal<string[]>([]);
+
   const [appNames, setAppNames] = createSignal<string[]>([]);
   const [appPaths, setAppPaths] = createSignal<string[]>([]);
 
@@ -13,17 +16,28 @@ const App = () => {
   const fetchApplications = async () => {
     try {
       const apps = await invoke<string[]>("list_applications");
-      setAppNames(apps.map((app: any) => app.name));
-      setAppPaths(apps.map((app: any) => app.path));
+      const sortedApps = apps.sort((a: any, b: any) =>
+        a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
+      );
+
+      setAppNames(sortedApps.map((app: any) => app.name));
+      setAppPaths(sortedApps.map((app: any) => app.path));
+
+      setSuggestions(appNames());
+
+      console.log(appNames(), appPaths());
     } catch (e) {
       console.error("Error fetching applications:", e);
     }
   };
 
-  const openApplication = () => {
-    const selectedApp = appPaths()[selectedItem()];
-    invoke("open_application", { path: selectedApp });
-    invoke("hide_window");
+  const openApplication = (app: string) => {
+    const appIndex = appNames().indexOf(app);
+    if (appIndex !== -1) {
+      const selectedApp = appPaths()[appIndex];
+      invoke("open_application", { path: selectedApp });
+      invoke("hide_window");
+    }
   };
 
   const handleArrowKeyPress = (event: KeyboardEvent) => {
@@ -50,7 +64,8 @@ const App = () => {
 
   const handleEnterKeyPress = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
-      openApplication();
+      const app = suggestions()[selectedItem()];
+      openApplication(app);
     }
   };
 
@@ -60,6 +75,16 @@ const App = () => {
   onMount(() => {
     fetchApplications();
   });
+
+  const handleInput = (e: any) => {
+    setQuery(e.currentTarget.value);
+
+    setSuggestions(
+      appNames().filter((appName: string) =>
+        appName.toLowerCase().includes(query().toLowerCase()),
+      ),
+    );
+  };
 
   webviewWindow.getCurrentWebviewWindow().onFocusChanged(async (focused) => {
     console.log(focused);
@@ -76,9 +101,10 @@ const App = () => {
           "padding-left": `calc(0.5rem + 10px)`,
           "padding-right": `calc(0.5rem + 10px)`,
         }}
+        onInput={handleInput}
       ></input>
       <div class="results-container overflow-auto bg-bg flex-grow">
-        <For each={appNames()}>
+        <For each={suggestions()}>
           {(appName: string, index) => (
             <div
               ref={(el) => (itemRefs[index()] = el)}
@@ -90,7 +116,7 @@ const App = () => {
               }}
               onClick={() => {
                 setSelectedItem(index());
-                openApplication();
+                openApplication(appName);
               }}
             >
               <div class="p-2 text-xl select-none">{appName}</div>
