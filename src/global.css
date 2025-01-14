@@ -633,6 +633,11 @@ video {
   background-color: rgb(26 27 38 / var(--tw-bg-opacity, 1));
 }
 
+.bg-fg {
+  --tw-bg-opacity: 1;
+  background-color: rgb(169 177 214 / var(--tw-bg-opacity, 1));
+}
+
 .p-2 {
   padding: 0.5rem;
 }
@@ -654,6 +659,11 @@ video {
 .text-fg {
   --tw-text-opacity: 1;
   color: rgb(169 177 214 / var(--tw-text-opacity, 1));
+}
+
+.text-bg {
+  --tw-text-opacity: 1;
+  color: rgb(26 27 38 / var(--tw-text-opacity, 1));
 }
 
 ::-webkit-scrollbar-thumb {

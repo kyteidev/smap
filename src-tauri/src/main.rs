@@ -4,12 +4,21 @@
 use serde::Serialize;
 use tauri_plugin_cli::CliExt;
 
-use std::process::Command;
+use std::{path::PathBuf, process::Command};
 
 #[derive(Serialize, Debug)]
 struct AppInfo {
     name: String,
     path: String,
+}
+
+#[tauri::command]
+fn open_application(path: PathBuf) {
+    println!("Opening application at path: {:?}", path);
+    Command::new("open")
+        .args(&["-a", path.to_str().unwrap()])
+        .spawn()
+        .unwrap();
 }
 
 #[tauri::command]
@@ -76,7 +85,10 @@ fn main() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![list_applications])
+        .invoke_handler(tauri::generate_handler![
+            list_applications,
+            open_application
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
