@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import "./global.css";
 import { createSignal, For, onMount } from "solid-js";
+import { webviewWindow } from "@tauri-apps/api";
 
 const App = () => {
   const [appNames, setAppNames] = createSignal<string[]>([]);
@@ -58,6 +59,13 @@ const App = () => {
 
   onMount(() => {
     fetchApplications();
+  });
+
+  webviewWindow.getCurrentWebviewWindow().onFocusChanged(async (focused) => {
+    console.log(focused);
+    if (focused.event === "tauri://blur") {
+      webviewWindow.getCurrentWebviewWindow().hide();
+    }
   });
 
   return (
