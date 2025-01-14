@@ -18,6 +18,11 @@ const App = () => {
     }
   };
 
+  const openApplication = () => {
+    const selectedApp = appPaths()[selectedItem()];
+    invoke("open_application", { path: selectedApp });
+  };
+
   const handleArrowKeyPress = (event: KeyboardEvent) => {
     if (event.key === "ArrowDown") {
       setSelectedItem((prev) => prev + 1);
@@ -28,8 +33,7 @@ const App = () => {
 
   const handleEnterKeyPress = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
-      const selectedApp = appPaths()[selectedItem()];
-      invoke("open_application", { path: selectedApp });
+      openApplication();
     }
   };
 
@@ -59,8 +63,12 @@ const App = () => {
                 "margin-left": "10px",
                 "margin-right": "10px",
               }}
+              onClick={() => {
+                setSelectedItem(index());
+                openApplication();
+              }}
             >
-              <div class="p-2 text-xl">{appName}</div>
+              <div class="p-2 text-xl select-none">{appName}</div>
             </div>
           )}
         </For>
