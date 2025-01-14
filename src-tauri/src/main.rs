@@ -13,6 +13,18 @@ struct AppInfo {
 }
 
 #[tauri::command]
+fn show_window(window: tauri::Window) {
+    window.show().unwrap();
+    window.set_focus().unwrap();
+}
+
+// Function to hide window
+#[tauri::command]
+fn hide_window(window: tauri::Window) {
+    window.hide().unwrap();
+}
+
+#[tauri::command]
 fn open_application(path: PathBuf) {
     println!("Opening application at path: {:?}", path);
     Command::new("open")
@@ -87,7 +99,9 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             list_applications,
-            open_application
+            open_application,
+            show_window,
+            hide_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

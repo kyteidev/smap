@@ -22,6 +22,7 @@ const App = () => {
   const openApplication = () => {
     const selectedApp = appPaths()[selectedItem()];
     invoke("open_application", { path: selectedApp });
+    invoke("hide_window");
   };
 
   const handleArrowKeyPress = (event: KeyboardEvent) => {
