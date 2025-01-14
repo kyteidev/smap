@@ -22,12 +22,25 @@ const App = () => {
 
   return (
     <div class="search-container overflow-hidden h-screen w-screen flex flex-col rounded-b-xl">
-      <input class="w-full text-fg bg-bg p-2 focus:outline-none focus:border-none h-12 text-3xl align-middle inline-block rounded-t-xl"></input>
-      <div class="results-container overflow-auto flex-grow">
+      <input
+        class="w-full text-fg bg-bg focus:outline-none focus:border-none min-h-12 h-12 max-h-12 py-2 text-xl align-middle inline-block rounded-t-xl"
+        style={{
+          "padding-left": `calc(0.5rem + 10px)`,
+          "padding-right": `calc(0.5rem + 10px)`,
+        }}
+      ></input>
+      <div class="results-container overflow-auto bg-bg flex-grow">
         <For each={appNames()}>
           {(appName: string) => (
-            <div class="flex flex-row justify-between items-center bg-bg w-full h-12">
-              <div class="ml-2 text-xl text-fg">{appName}</div>
+            <div
+              class="flex flex-row justify-between items-center hover:bg-hover bg-bg rounded-xl h-12 max-h-12"
+              style={{
+                width: `calc(100% - 20px)`,
+                "margin-left": "10px",
+                "margin-right": "10px",
+              }}
+            >
+              <div class="p-2 text-xl text-fg">{appName}</div>
             </div>
           )}
         </For>

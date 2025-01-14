@@ -9,6 +9,7 @@ module.exports = {
       white: "#fff",
       bg: "#1a1b26",
       fg: "#a9b1d6",
+      hover: "#565f89",
     },
   },
   plugins: [],

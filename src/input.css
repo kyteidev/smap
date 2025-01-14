@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+::-webkit-scrollbar-thumb {
+    background-color: #a9b1d6;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #a9b1d6;
+}
+
+::-webkit-scrollbar-thumb:active {
+    background-color: #a9b1d6;
+}
+
+::-wekbit-scrollbar-button {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background-color: transparent !important;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #a9b1d6 transparent;
+    }
+
+    pre {
+        scrollbar-color: transparent transparent;
+    }
+}
