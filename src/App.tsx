@@ -7,6 +7,7 @@ const App = () => {
   const [appPaths, setAppPaths] = createSignal<string[]>([]);
 
   const [selectedItem, setSelectedItem] = createSignal<number>(0);
+  const itemRefs: { [key: number]: HTMLDivElement } = {};
 
   const fetchApplications = async () => {
     try {
@@ -25,9 +26,23 @@ const App = () => {
 
   const handleArrowKeyPress = (event: KeyboardEvent) => {
     if (event.key === "ArrowDown") {
-      setSelectedItem((prev) => prev + 1);
+      setSelectedItem((prev) => {
+        const next = prev + 1;
+        if (next < appNames().length) {
+          itemRefs[next]?.scrollIntoView({ block: "nearest" });
+          return next;
+        }
+        return prev;
+      });
     } else if (event.key === "ArrowUp") {
-      setSelectedItem((prev) => prev - 1);
+      setSelectedItem((prev) => {
+        const next = prev - 1;
+        if (next >= 0) {
+          itemRefs[next]?.scrollIntoView({ block: "nearest" });
+          return next;
+        }
+        return prev;
+      });
     }
   };
 
@@ -57,6 +72,7 @@ const App = () => {
         <For each={appNames()}>
           {(appName: string, index) => (
             <div
+              ref={(el) => (itemRefs[index()] = el)}
               class={`${index() === selectedItem() ? "bg-fg text-bg" : "hover:bg-hover bg-bg text-fg"} flex flex-row items-center justify-between rounded-xl h-12 max-h-12`}
               style={{
                 width: `calc(100% - 20px)`,
