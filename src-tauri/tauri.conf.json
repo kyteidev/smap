@@ -15,13 +15,14 @@
       {
         "title": "smap",
         "width": 600,
-        "height": 400,
+        "height": 450,
         "visible": true,
         "transparent": true,
         "hiddenTitle": true,
         "decorations": false,
         "alwaysOnTop": true,
-        "resizable": false
+        "resizable": false,
+        "center": true
       }
     ],
     "security": {
