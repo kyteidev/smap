@@ -665,6 +665,15 @@ video {
   padding-bottom: 0.5rem;
 }
 
+.py-\[10px\] {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.pb-\[10px\] {
+  padding-bottom: 10px;
+}
+
 .align-middle {
   vertical-align: middle;
 }

@@ -119,26 +119,28 @@ const App = () => {
         onInput={handleInput}
         value={query()}
       ></input>
-      <div class="results-container overflow-auto bg-bg flex-grow">
-        <For each={suggestions()}>
-          {(appName: string, index) => (
-            <div
-              ref={(el) => (itemRefs[index()] = el)}
-              class={`${index() === selectedItem() ? "bg-fg text-bg" : "hover:bg-hover bg-bg text-fg"} flex flex-row items-center justify-between rounded-xl h-12 max-h-12`}
-              style={{
-                width: `calc(100% - 20px)`,
-                "margin-left": "10px",
-                "margin-right": "10px",
-              }}
-              onClick={() => {
-                setSelectedItem(index());
-                openApplication(appName);
-              }}
-            >
-              <div class="p-2 text-xl select-none">{appName}</div>
-            </div>
-          )}
-        </For>
+      <div class="results-container-wrapper overflow-auto bg-bg flex-grow pb-[10px]">
+        <div class="results-container overflow-auto bg-bg flex-grow">
+          <For each={suggestions()}>
+            {(appName: string, index) => (
+              <div
+                ref={(el) => (itemRefs[index()] = el)}
+                class={`${index() === selectedItem() ? "bg-fg text-bg" : "hover:bg-hover bg-bg text-fg"} flex flex-row items-center justify-between rounded-xl h-12 max-h-12`}
+                style={{
+                  width: `calc(100% - 20px)`,
+                  "margin-left": "10px",
+                  "margin-right": "10px",
+                }}
+                onClick={() => {
+                  setSelectedItem(index());
+                  openApplication(appName);
+                }}
+              >
+                <div class="p-2 text-xl select-none">{appName}</div>
+              </div>
+            )}
+          </For>
+        </div>
       </div>
     </div>
   );
