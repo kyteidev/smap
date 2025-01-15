@@ -2,7 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::Serialize;
+use tauri::menu::Menu;
 use tauri::Manager;
+use tauri::{menu::MenuItem, tray::TrayIconBuilder};
 use tauri_plugin_cli::CliExt;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
@@ -90,6 +92,14 @@ fn main() {
     let mut app = tauri::Builder::default()
         .plugin(tauri_plugin_cli::init())
         .setup(|app| {
+            let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&quit_item])?;
+
+            let _tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .menu(&menu)
+                .build(app)?;
+
             match app.cli().matches() {
                 Ok(matches) => {
                     println!("{:?}", matches)
@@ -126,6 +136,15 @@ fn main() {
             app.global_shortcut().register(shortcut_keys)?;
 
             Ok(())
+        })
+        .on_menu_event(|app, e| match e.id.as_ref() {
+            "quit" => {
+                println!("Quitting app");
+                app.exit(0);
+            }
+            _ => {
+                eprintln!("Error: unknown menu event: {:?}", e.id);
+            }
         })
         .invoke_handler(tauri::generate_handler![
             list_applications,
