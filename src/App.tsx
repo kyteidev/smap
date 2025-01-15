@@ -26,8 +26,6 @@ const App = () => {
       setAppPaths(sortedApps.map((app: any) => app.path));
 
       setSuggestions(appNames());
-
-      console.log(appNames(), appPaths());
     } catch (e) {
       console.error("Error fetching applications:", e);
     }
@@ -98,9 +96,12 @@ const App = () => {
   };
 
   webviewWindow.getCurrentWebviewWindow().onFocusChanged(async (focused) => {
-    console.log(focused);
     if (focused.event === "tauri://blur") {
       webviewWindow.getCurrentWebviewWindow().hide();
+
+      setQuery("");
+      setSelectedItem(0);
+      setSuggestions(appNames());
     } else if (focused.event === "tauri://focus") {
       inputRef?.focus();
     }
@@ -116,6 +117,7 @@ const App = () => {
           "padding-right": `calc(0.5rem + 10px)`,
         }}
         onInput={handleInput}
+        value={query()}
       ></input>
       <div class="results-container overflow-auto bg-bg flex-grow">
         <For each={suggestions()}>
