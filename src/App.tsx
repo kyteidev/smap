@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import "./global.css";
-import { createSignal, For, onMount } from "solid-js";
+import { createEffect, createSignal, For, onMount } from "solid-js";
 import { webviewWindow } from "@tauri-apps/api";
 
 const App = () => {
@@ -12,6 +12,8 @@ const App = () => {
 
   const [selectedItem, setSelectedItem] = createSignal<number>(0);
   const itemRefs: { [key: number]: HTMLDivElement } = {};
+
+  let prevSelectedApp = "";
 
   const fetchApplications = async () => {
     try {
@@ -45,7 +47,6 @@ const App = () => {
       setSelectedItem((prev) => {
         const next = prev + 1;
         if (next < appNames().length) {
-          itemRefs[next]?.scrollIntoView({ block: "nearest" });
           return next;
         }
         return prev;
@@ -54,7 +55,6 @@ const App = () => {
       setSelectedItem((prev) => {
         const next = prev - 1;
         if (next >= 0) {
-          itemRefs[next]?.scrollIntoView({ block: "nearest" });
           return next;
         }
         return prev;
@@ -76,6 +76,12 @@ const App = () => {
     fetchApplications();
   });
 
+  createEffect(() => {
+    itemRefs[selectedItem()]?.scrollIntoView({
+      block: "nearest",
+    });
+  }, [selectedItem()]);
+
   const handleInput = (e: any) => {
     setQuery(e.currentTarget.value);
 
@@ -84,6 +90,10 @@ const App = () => {
         appName.toLowerCase().includes(query().toLowerCase()),
       ),
     );
+
+    if (selectedItem() > suggestions().length - 1) {
+      setSelectedItem(0);
+    }
   };
 
   webviewWindow.getCurrentWebviewWindow().onFocusChanged(async (focused) => {
