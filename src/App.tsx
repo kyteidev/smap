@@ -13,7 +13,7 @@ const App = () => {
   const [selectedItem, setSelectedItem] = createSignal<number>(0);
   const itemRefs: { [key: number]: HTMLDivElement } = {};
 
-  let prevSelectedApp = "";
+  let inputRef: HTMLInputElement | undefined;
 
   const fetchApplications = async () => {
     try {
@@ -74,6 +74,7 @@ const App = () => {
 
   onMount(() => {
     fetchApplications();
+    inputRef?.focus();
   });
 
   createEffect(() => {
@@ -100,12 +101,15 @@ const App = () => {
     console.log(focused);
     if (focused.event === "tauri://blur") {
       webviewWindow.getCurrentWebviewWindow().hide();
+    } else if (focused.event === "tauri://focus") {
+      inputRef?.focus();
     }
   });
 
   return (
     <div class="search-container overflow-hidden h-screen w-screen max-h-screen min-h-screen flex flex-col rounded-b-xl">
       <input
+        ref={inputRef}
         class="w-full text-fg bg-bg focus:outline-none focus:border-none min-h-12 h-12 max-h-12 py-2 text-xl align-middle inline-block rounded-t-xl"
         style={{
           "padding-left": `calc(0.5rem + 10px)`,
