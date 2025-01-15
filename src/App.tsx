@@ -104,7 +104,7 @@ const App = () => {
   });
 
   return (
-    <div class="search-container overflow-hidden h-screen w-screen flex flex-col rounded-b-xl">
+    <div class="search-container overflow-hidden h-screen w-screen max-h-screen min-h-screen flex flex-col rounded-b-xl">
       <input
         class="w-full text-fg bg-bg focus:outline-none focus:border-none min-h-12 h-12 max-h-12 py-2 text-xl align-middle inline-block rounded-t-xl"
         style={{
