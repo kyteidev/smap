@@ -134,6 +134,13 @@ const App = () => {
       resetSuggestions();
     } else if (focused.event === "tauri://focus") {
       inputRef?.focus();
+
+      const resultsContainer = document.querySelector(
+        ".results-container-wrapper",
+      );
+      if (resultsContainer) {
+        resultsContainer.scrollTop = 0;
+      }
     }
   });
 
@@ -150,7 +157,7 @@ const App = () => {
         value={query()}
       ></input>
       <div class="results-container-wrapper overflow-auto bg-bg flex-grow pb-[10px]">
-        <div class="results-container overflow-auto bg-bg flex-grow">
+        <div class="results-container overflow-none bg-bg flex-grow">
           <For each={suggestions().map((item) => item.item)}>
             {(appName: string, index) => (
               <div
