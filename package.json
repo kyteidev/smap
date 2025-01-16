@@ -17,6 +17,7 @@
     "@tauri-apps/plugin-cli": "^2.2.0",
     "@tauri-apps/plugin-global-shortcut": "^2.2.0",
     "@tauri-apps/plugin-opener": "^2",
+    "fuse.js": "^7.0.0",
     "solid-js": "^1.9.3"
   },
   "devDependencies": {

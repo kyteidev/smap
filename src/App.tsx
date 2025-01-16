@@ -1,11 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import "./global.css";
-import { createEffect, createSignal, For, onMount } from "solid-js";
+import { createEffect, createMemo, createSignal, For, onMount } from "solid-js";
 import { webviewWindow } from "@tauri-apps/api";
+import Fuse, { FuseResultMatch } from "fuse.js";
 
 const App = () => {
   const [query, setQuery] = createSignal<string>("");
-  const [suggestions, setSuggestions] = createSignal<string[]>([]);
+  const [suggestions, setSuggestions] = createSignal<
+    { item: string; matches: FuseResultMatch[] | undefined }[]
+  >([]);
 
   const [appNames, setAppNames] = createSignal<string[]>([]);
   const [appPaths, setAppPaths] = createSignal<string[]>([]);
@@ -14,6 +17,8 @@ const App = () => {
   const itemRefs: { [key: number]: HTMLDivElement } = {};
 
   let inputRef: HTMLInputElement | undefined;
+
+  let fuse: Fuse<string>;
 
   const fetchApplications = async () => {
     try {
@@ -25,10 +30,25 @@ const App = () => {
       setAppNames(sortedApps.map((app: any) => app.name));
       setAppPaths(sortedApps.map((app: any) => app.path));
 
-      setSuggestions(appNames());
+      fuse = new Fuse(appNames(), {
+        threshold: 0.4,
+        includeMatches: true,
+      });
+
+      resetSuggestions();
     } catch (e) {
       console.error("Error fetching applications:", e);
     }
+  };
+
+  const resetSuggestions = () => {
+    setSuggestions(
+      appNames()
+        .map((item) => ({ item, matches: undefined }))
+        .sort((a, b) =>
+          a.item.toLowerCase().localeCompare(b.item.toLowerCase()),
+        ),
+    );
   };
 
   const openApplication = (app: string) => {
@@ -44,7 +64,7 @@ const App = () => {
     if (event.key === "ArrowDown") {
       setSelectedItem((prev) => {
         const next = prev + 1;
-        if (next < appNames().length) {
+        if (next < suggestions().length) {
           return next;
         }
         return prev;
@@ -63,7 +83,7 @@ const App = () => {
   const handleEnterKeyPress = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
       const app = suggestions()[selectedItem()];
-      openApplication(app);
+      openApplication(app.item);
     }
   };
 
@@ -83,17 +103,27 @@ const App = () => {
 
   const handleInput = (e: any) => {
     setQuery(e.currentTarget.value);
+  };
 
-    setSuggestions(
-      appNames().filter((appName: string) =>
-        appName.toLowerCase().includes(query().toLowerCase()),
-      ),
-    );
+  createMemo(() => {
+    const search = query().toLowerCase().trim();
+
+    if (search) {
+      const result = fuse.search(search);
+      setSuggestions(
+        result.map((res) => ({
+          item: res.item,
+          matches: [...(res.matches || [])],
+        })),
+      );
+    } else {
+      resetSuggestions();
+    }
 
     if (selectedItem() > suggestions().length - 1) {
       setSelectedItem(0);
     }
-  };
+  });
 
   webviewWindow.getCurrentWebviewWindow().onFocusChanged(async (focused) => {
     if (focused.event === "tauri://blur") {
@@ -101,7 +131,7 @@ const App = () => {
 
       setQuery("");
       setSelectedItem(0);
-      setSuggestions(appNames());
+      resetSuggestions();
     } else if (focused.event === "tauri://focus") {
       inputRef?.focus();
     }
@@ -121,7 +151,7 @@ const App = () => {
       ></input>
       <div class="results-container-wrapper overflow-auto bg-bg flex-grow pb-[10px]">
         <div class="results-container overflow-auto bg-bg flex-grow">
-          <For each={suggestions()}>
+          <For each={suggestions().map((item) => item.item)}>
             {(appName: string, index) => (
               <div
                 ref={(el) => (itemRefs[index()] = el)}
