@@ -128,12 +128,12 @@ const App = () => {
   webviewWindow.getCurrentWebviewWindow().onFocusChanged(async (focused) => {
     if (focused.event === "tauri://blur") {
       webviewWindow.getCurrentWebviewWindow().hide();
+    } else if (focused.event === "tauri://focus") {
+      inputRef?.focus();
 
       setQuery("");
       setSelectedItem(0);
       resetSuggestions();
-    } else if (focused.event === "tauri://focus") {
-      inputRef?.focus();
 
       const resultsContainer = document.querySelector(
         ".results-container-wrapper",
