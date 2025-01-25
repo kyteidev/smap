@@ -16,7 +16,7 @@
         "title": "smap",
         "width": 600,
         "height": 450,
-        "visible": true,
+        "visible": false,
         "transparent": true,
         "hiddenTitle": true,
         "decorations": false,
