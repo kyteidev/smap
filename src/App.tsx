@@ -1,10 +1,20 @@
 import { invoke } from "@tauri-apps/api/core";
 import "./global.css";
-import { createEffect, createMemo, createSignal, For, onMount } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+} from "solid-js";
 import { webviewWindow } from "@tauri-apps/api";
 import Fuse, { FuseResultMatch } from "fuse.js";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 const App = () => {
+  let unlisten: UnlistenFn;
+
   const [query, setQuery] = createSignal<string>("");
   const [suggestions, setSuggestions] = createSignal<
     { item: string; matches: FuseResultMatch[] | undefined }[]
@@ -90,9 +100,17 @@ const App = () => {
   document.addEventListener("keydown", handleArrowKeyPress);
   document.addEventListener("keydown", handleEnterKeyPress);
 
-  onMount(() => {
+  onMount(async () => {
     fetchApplications();
     inputRef?.focus();
+
+    unlisten = await listen("update-apps", () => {
+      fetchApplications();
+    });
+  });
+
+  onCleanup(() => {
+    unlisten?.();
   });
 
   createEffect(() => {

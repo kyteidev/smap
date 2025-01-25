@@ -1,16 +1,16 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::menu::Menu;
-use tauri::Manager;
 use tauri::{menu::MenuItem, tray::TrayIconBuilder};
+use tauri::{Emitter, Manager};
 use tauri_plugin_cli::CliExt;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 use std::{path::PathBuf, process::Command};
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 struct AppInfo {
     name: String,
     path: String,
@@ -37,7 +37,49 @@ fn open_application(path: PathBuf) {
 }
 
 #[tauri::command]
-fn list_applications() -> Result<Vec<AppInfo>, String> {
+fn list_applications(app_handle: tauri::AppHandle) -> Result<Vec<AppInfo>, String> {
+    let cache_dir = app_handle.path().app_cache_dir().unwrap();
+    let cache_file = cache_dir.join("applications.json");
+
+    std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
+
+    // if cache file exists, return cached apps immediately, and check for possible new apps
+    if cache_file.exists() {
+        println!("Loading cached applications...");
+        let cached_apps: Vec<AppInfo> =
+            serde_json::from_str(&std::fs::read_to_string(&cache_file).map_err(|e| e.to_string())?)
+                .map_err(|e| e.to_string())?;
+
+        let app_handle = app_handle.clone();
+        let cache_file = cache_file.clone();
+        std::thread::spawn(move || {
+            if let Ok(new_apps) = find_applications() {
+                if let Ok(cached_content) = std::fs::read_to_string(&cache_file) {
+                    if let Ok(cached_apps) = serde_json::from_str::<Vec<AppInfo>>(&cached_content) {
+                        if new_apps != cached_apps {
+                            if let Ok(json) = serde_json::to_string(&new_apps) {
+                                let _ = std::fs::write(&cache_file, json);
+                            }
+
+                            let _ = app_handle.emit("update-apps", "");
+                        }
+                    }
+                }
+            }
+        });
+
+        return Ok(cached_apps);
+    }
+
+    // If no cache exists, find apps and create cache
+    let apps = find_applications()?;
+    if let Ok(json) = serde_json::to_string(&apps) {
+        let _ = std::fs::write(cache_file, json);
+    }
+    Ok(apps)
+}
+
+fn find_applications() -> Result<Vec<AppInfo>, String> {
     println!("Finding applications...");
     let output = Command::new("mdfind")
         .arg("kMDItemContentType==\"com.apple.application-bundle\"")
@@ -51,15 +93,12 @@ fn list_applications() -> Result<Vec<AppInfo>, String> {
             .split('\n')
             .filter(|app| {
                 !app.is_empty()
-                    && (
-                        // Filter for common application directories
-                        app.starts_with("/Applications/")
-                            || app.starts_with("/System/Applications/")
-                            || app.starts_with(&format!(
-                                "{}/Applications/",
-                                std::env::var("HOME").unwrap_or_default()
-                            ))
-                    )
+                    && (app.starts_with("/Applications/")
+                        || app.starts_with("/System/Applications/")
+                        || app.starts_with(&format!(
+                            "{}/Applications/",
+                            std::env::var("HOME").unwrap_or_default()
+                        )))
             })
             .collect();
         let mut app_infos = Vec::new();
